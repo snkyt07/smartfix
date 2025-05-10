@@ -31,17 +31,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       messages: [
         {
           role: 'system',
-          content: `You are an appliance diagnostic assistant.
-Always ask exactly one question that the user can answer with "yes" or "no".
-Never ask open-ended questions. Do not repeat questions that were already asked.
-Respond ONLY with valid JSON matching this TypeScript type:
-type Result =
-  | { follow_up_needed: true; sessionId: string; question: string }
-  | { follow_up_needed: false; sessionId: string; final_report: {
-        causes: { name: string; prob: number }[];
-        diy_fix: string[];
-        action: "call_support" | "replace" | "monitor";
-    }}.`,
+          content: 
+          `You are an appliance diagnostic assistant.
+          Always ask exactly one question that the user can answer with "yes" or "no".
+          Never ask open-ended questions. Do not repeat questions that were already asked.
+          Response all document in Japanese.
+          Respond ONLY with valid JSON matching this TypeScript type:
+          type Result =
+            | { follow_up_needed: true; sessionId: string; question: string }
+            | { follow_up_needed: false; sessionId: string; final_report: {
+                  causes: { name: string; prob: number }[];
+                  diy_fix: string[];
+                  action: "call_support" | "replace" | "monitor";
+              }}.`,
         },
         { role: 'user', content: JSON.stringify(payload) },
         ...historyMsgs,

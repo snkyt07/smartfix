@@ -36,6 +36,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           Always ask exactly one question that the user can answer with "yes" or "no".
           Never ask open-ended questions. Do not repeat questions that were already asked.
           Response all document in Japanese.
+          Constraints for "causes":
+            - "prob" must be an integer 1–100 (no % sign)
+            - The sum of all "prob" values MUST equal 100
           Respond ONLY with valid JSON matching this TypeScript type:
           type Result =
             | { follow_up_needed: true; sessionId: string; question: string }

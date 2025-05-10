@@ -7,7 +7,7 @@
     "module": "ES2020",
     "skipLibCheck": true,
     "typeRoots": ["./node_modules/@types", "./types"],
-    "outDir": "dist",
+
     /* Bundler mode */
     "moduleResolution": "node",
     //"allowImportingTsExtensions": true,

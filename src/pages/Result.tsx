@@ -27,7 +27,7 @@ export default function Result() {
             {causes.map((c, i) => (
               <li key={i} className="flex justify-between text-sm">
                 <span>{c.name}</span>
-                <span className="text-gray-500">{Math.round(c.prob)}%</span>
+                <span className="text-gray-500"> : {Math.round(c.prob)}%</span>
               </li>
             ))}
           </ul>

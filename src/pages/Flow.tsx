@@ -18,6 +18,14 @@ type ResultResponse = {
   };
 };
 
+// フォールバック用
+type UnknownResponse = {
+    follow_up_needed: false;
+    sessionId: string;
+    unable: true;
+    reason: 'max_depth' | 'repeat';
+  };
+
 type QuestionResponse = {
   follow_up_needed: true;
   sessionId: string;
@@ -67,7 +75,23 @@ export default function Flow() {
         navigate('/result', { state: res as unknown as ResultResponse });
         return;
       }
+      const terminate =
+        !res.follow_up_needed ||
+        asked.has(res.question ?? '') ||
+        asked.size >= MAX_DEPTH;
 
+      if (terminate) {
+        const fallback: UnknownResponse = {
+          follow_up_needed: false,
+          sessionId: data.sessionId,
+          unable: true,
+          reason: asked.size >= MAX_DEPTH ? 'max_depth' : 'repeat'
+        };
+        navigate('/result', {
+          state: res.follow_up_needed ? fallback : (res as ResultResponse)
+        });
+        return;
+      }
       setData(res);
       setPayload(newPayload);
       setAsked(q => new Set(q).add(res.question));

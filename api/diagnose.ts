@@ -35,7 +35,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           `You are an appliance diagnostic assistant.
           Always ask exactly one question that the user can answer with "yes" or "no".
           Never ask open-ended questions. Do not repeat questions that were already asked.
-          If the user answers "unknown", ask a different question from a new angle.
+          If the user answered "unknown" or the same question already
+          appeared in the history, **do NOT repeat it verbatim**.
+          Instead, rephrase from a different angle to get new information.
           Respond all document in Japanese.
           Constraints for "causes":
             - "prob" must be an integer 1–100 (no % sign)

@@ -38,7 +38,6 @@ type DiagnoseResponse = ResultResponse | QuestionResponse;
 
 /* ── コンポーネント ─────────────────────── */
 export default function Flow() {
-  /* Home から渡された初回質問 */
   const { state: initial } = useLocation() as {
     state: QuestionResponse & { payload: Payload };
   };
@@ -46,64 +45,66 @@ export default function Flow() {
   const navigate = useNavigate();
 
   /* React 状態 */
-  const [data, setData] = useState<DiagnoseResponse>(initial);
-  const [payload, setPayload] = useState<Payload>(initial.payload);
-  const [asked, setAsked] = useState<Set<string>>(new Set([initial.question]));
-  const [repeatCnt, setRepeatCnt] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [data, setData]          = useState<DiagnoseResponse>(initial);
+  const [payload, setPayload]    = useState<Payload>(initial.payload);
+  const [asked, setAsked]        = useState<Set<string>>(new Set([initial.question]));
+  const [repeatCnt, setRepeatCnt]= useState(0);
+  const [loading, setLoading]    = useState(false);
 
-  const MAX_DEPTH = 8;
+  const MAX_DEPTH  = 8;
+  const MAX_REPEAT = 3;              // 同文面 3 連続で打ち切り
+
+  /* 質問スキップ&リトライ用の共通 fetch */
+  const fetchNext = async (newPayload: Payload, sessionId: string): Promise<DiagnoseResponse> =>
+    fetch('/api/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId,
+        payload: newPayload,
+        historyMsgs: newPayload.history.flatMap(h => [
+          { role: 'assistant', content: h.question },
+          { role: 'user',       content: h.answer   },
+        ]),
+      }),
+    }).then(r => r.json());
 
   /* 回答ハンドラ */
   const answer = async (ans: 'yes' | 'no' | 'unknown') => {
     if (!('question' in data)) return;
     setLoading(true);
 
-    /* 履歴を更新 */
+    /* 履歴更新 */
     const newHistory: QA[] = [...payload.history, { question: data.question, answer: ans }];
     const newPayload: Payload = { ...payload, history: newHistory };
 
     try {
-      const res: DiagnoseResponse = await fetch('/api/diagnose', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: data.sessionId,
-          payload: newPayload,
-          historyMsgs: newHistory.flatMap(h => [
-            { role: 'assistant', content: h.question },
-            { role: 'user', content: h.answer },
-          ]),
-        }),
-      }).then(r => r.json());
+      const res = await fetchNext(newPayload, data.sessionId);
 
-      /* -------- 終了判定 -------- */
+      /* ---------- 終了条件 ---------- */
       const terminate =
-        !res.follow_up_needed ||        // GPT が完了を宣言
-        asked.size >= MAX_DEPTH;        // 質問数上限に到達
+        !res.follow_up_needed ||            // GPT が完了宣言
+        asked.size >= MAX_DEPTH;            // 深さ上限
 
       if (terminate) {
-        alert('診断を完了します。結果を表示します。');
-
         const fallback: UnknownResponse = {
           follow_up_needed: false,
           sessionId: data.sessionId,
           unable: true,
           reason: 'max_depth',
         };
-
         navigate('/result', {
           state: res.follow_up_needed ? fallback : (res as ResultResponse),
         });
         return;
       }
 
-      /* -------- 同じ質問が続いた場合の処理 -------- */
-      if (res.question === data.question) {
+      /* ---------- 重複質問チェック ---------- */
+      if (asked.has(res.question ?? '')) {
         setRepeatCnt(c => c + 1);
 
-        if (repeatCnt + 1 >= 3) {
-          alert('同じ質問が続いたため診断を終了します。');
+        // 3 連続同じ質問⇒あきらめ
+        if (repeatCnt + 1 >= MAX_REPEAT) {
           const fallback: UnknownResponse = {
             follow_up_needed: false,
             sessionId: data.sessionId,
@@ -113,11 +114,14 @@ export default function Flow() {
           navigate('/result', { state: fallback });
           return;
         }
-      } else {
-        setRepeatCnt(0); // 新しい質問に進んだらリセット
+
+        // 同じ質問をスキップして再リクエスト (unknown 自動送信)
+        await answer('unknown');
+        return;
       }
 
-      /* -------- 続行 -------- */
+      /* ---------- 正常に次の質問へ ---------- */
+      setRepeatCnt(0);
       setData(res);
       setPayload(newPayload);
       setAsked(prev => new Set(prev).add(res.question));
@@ -129,7 +133,7 @@ export default function Flow() {
     }
   };
 
-  /* 結果待ちローディング */
+  /* 結果待ち表示 */
   if (!('question' in data)) {
     return (
       <div className="p-6 text-center text-gray-600">
@@ -138,7 +142,7 @@ export default function Flow() {
     );
   }
 
-  /* -------- 質問表示 -------- */
+  /* ---------- 質問表示 ---------- */
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-[22rem] space-y-6 bg-white p-6 rounded-xl shadow">

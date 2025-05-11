@@ -43,7 +43,7 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white p-6">
       <div className="bg-white rounded-2xl shadow-lg p-8 max-w-lg w-full">
         <h1 className="text-3xl font-bold text-center mb-6 text-blue-600">
-          SmartFix 家電診断
+          SmartFix 家電診断test
         </h1>
         <div className="grid grid-cols-1 gap-y-8">
           <div className="flex flex-col">

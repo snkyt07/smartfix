@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-type QA = { question: string; answer: 'yes' | 'no' };
+type QA = { question: string; answer: 'yes' | 'no' | 'unknown' };
 type Payload = {
   device: string;
   symptom: string;
@@ -38,7 +38,7 @@ export default function Flow() {
   const [asked, setAsked] = useState<Set<string>>(new Set([initial.question]));
   const MAX_DEPTH = 8;
 
-  const answer = async (ans: 'yes' | 'no') => {
+  const answer = async (ans: 'yes' | 'no' | 'unknown') => {
     if (!('question' in data)) return;
     setLoading(true);
 
@@ -95,6 +95,10 @@ export default function Flow() {
           <button onClick={() => answer('no')} disabled={loading}
             className="w-1/2 py-2 rounded bg-gray-300 hover:bg-gray-400 disabled:bg-gray-200">
             いいえ
+          </button>
+          <button onClick={() => answer('unknown')} disabled={loading}
+            className="w-1/2 py-2 rounded bg-yellow-300 hover:bg-yellow-400 disabled:bg-gray-200">
+            わからない
           </button>
         </div>
       </div>

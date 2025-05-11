@@ -6,7 +6,7 @@ type DiagnoseRequest = {
   payload: {
     device: string;
     symptom: string;
-    history: { question: string; answer: 'yes' | 'no' }[];
+    history: { question: string; answer: 'yes' | 'no' | 'unknown' }[];
   };
 };
 

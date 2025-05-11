@@ -37,7 +37,7 @@ export default function Result() {
           <p className="text-gray-700">
             {state.reason === 'max_depth'
               ? '質問回数の上限に達したため診断を終了します。'
-              : '同じ質問が繰り返されたため診断を終了します。'}
+              : '同じ回答が繰り返されたため診断を終了します。'}
           </p>
           <button
             onClick={() => navigate('/')}

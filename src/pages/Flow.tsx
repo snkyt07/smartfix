@@ -51,7 +51,7 @@ export default function Flow() {
   const [repeatCnt, setRepeatCnt]= useState(0);
   const [loading, setLoading]    = useState(false);
 
-  const MAX_DEPTH  = 8;
+  const MAX_DEPTH  = 12;
   const MAX_REPEAT = 3;              // 同文面 3 連続で打ち切り
 
   /* 質問スキップ&リトライ用の共通 fetch */

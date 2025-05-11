@@ -35,7 +35,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           `You are an appliance diagnostic assistant.
           Always ask exactly one question that the user can answer with "yes" or "no".
           Never ask open-ended questions. Do not repeat questions that were already asked.
-          Response all document in Japanese.
+          If the user answers "unknown", ask a different question from a new angle.
+          Respond all document in Japanese.
           Constraints for "causes":
             - "prob" must be an integer 1–100 (no % sign)
             - The sum of all "prob" values MUST equal 100

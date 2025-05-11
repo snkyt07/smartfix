@@ -21,12 +21,11 @@ type ResultResponse = {
   };
 };
 
-/** 推定できなかった場合のフォールバック */
 type UnknownResponse = {
   follow_up_needed: false;
   sessionId: string;
   unable: true;
-  reason: 'max_depth';
+  reason: 'max_depth' | 'repeat';
 };
 
 type QuestionResponse = {
@@ -50,6 +49,7 @@ export default function Flow() {
   const [data, setData] = useState<DiagnoseResponse>(initial);
   const [payload, setPayload] = useState<Payload>(initial.payload);
   const [asked, setAsked] = useState<Set<string>>(new Set([initial.question]));
+  const [repeatCnt, setRepeatCnt] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const MAX_DEPTH = 8;
@@ -96,6 +96,25 @@ export default function Flow() {
           state: res.follow_up_needed ? fallback : (res as ResultResponse),
         });
         return;
+      }
+
+      /* -------- 同じ質問が続いた場合の処理 -------- */
+      if (res.question === data.question) {
+        setRepeatCnt(c => c + 1);
+
+        if (repeatCnt + 1 >= 3) {
+          alert('同じ質問が続いたため診断を終了します。');
+          const fallback: UnknownResponse = {
+            follow_up_needed: false,
+            sessionId: data.sessionId,
+            unable: true,
+            reason: 'repeat',
+          };
+          navigate('/result', { state: fallback });
+          return;
+        }
+      } else {
+        setRepeatCnt(0); // 新しい質問に進んだらリセット
       }
 
       /* -------- 続行 -------- */

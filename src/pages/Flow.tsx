@@ -127,11 +127,11 @@ export default function Flow() {
       <div className="w-[22rem] space-y-6 bg-white p-6 rounded-xl shadow">
         <p className="text-lg font-semibold">{data.question}</p>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex gap-4">
           <button
             onClick={() => answer('yes')}
             disabled={loading}
-            className="py-2 rounded text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
+            className="w-1/3 py-2 rounded text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
           >
             はい
           </button>
@@ -139,7 +139,7 @@ export default function Flow() {
           <button
             onClick={() => answer('no')}
             disabled={loading}
-            className="py-2 rounded bg-gray-300 hover:bg-gray-400 disabled:bg-gray-200"
+            className="w-1/3 py-2 rounded bg-gray-300 hover:bg-gray-400 disabled:bg-gray-200"
           >
             いいえ
           </button>
@@ -147,7 +147,7 @@ export default function Flow() {
           <button
             onClick={() => answer('unknown')}
             disabled={loading}
-            className="py-2 rounded bg-yellow-300 hover:bg-yellow-400 disabled:bg-gray-200"
+            className="w-1/3 py-2 rounded bg-yellow-300 hover:bg-yellow-400 disabled:bg-gray-200"
           >
             わからない
           </button>

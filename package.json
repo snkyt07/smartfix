@@ -9,14 +9,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-slot": "^1.0.2",
     "@supabase/supabase-js": "^2.49.4",
     "axios": "^1.9.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
     "gpt-3-encoder": "^1.1.4",
     "gpt-tokenizer": "^2.9.0",
+    "lucide-react": "^0.344.0",
     "openai": "^4.97.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.5.3"
+    "react-router-dom": "^7.5.3",
+    "tailwind-merge": "^2.2.1",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

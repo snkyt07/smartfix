@@ -1,8 +1,7 @@
-// src/pages/Flow.tsx
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { Button } from "@/components/ui/button"
 
-/* ── 型定義 ─────────────────────────────── */
 type QA = { question: string; answer: 'yes' | 'no' | 'unknown' };
 
 type Payload = {
@@ -36,7 +35,6 @@ type QuestionResponse = {
 
 type DiagnoseResponse = ResultResponse | QuestionResponse;
 
-/* ── コンポーネント ─────────────────────── */
 export default function Flow() {
   const { state: initial } = useLocation() as {
     state: QuestionResponse & { payload: Payload };
@@ -44,17 +42,15 @@ export default function Flow() {
 
   const navigate = useNavigate();
 
-  /* React 状態 */
-  const [data, setData]          = useState<DiagnoseResponse>(initial);
-  const [payload, setPayload]    = useState<Payload>(initial.payload);
-  const [asked, setAsked]        = useState<Set<string>>(new Set([initial.question]));
-  const [repeatCnt, setRepeatCnt]= useState(0);
-  const [loading, setLoading]    = useState(false);
+  const [data, setData] = useState<DiagnoseResponse>(initial);
+  const [payload, setPayload] = useState<Payload>(initial.payload);
+  const [asked, setAsked] = useState<Set<string>>(new Set([initial.question]));
+  const [repeatCnt, setRepeatCnt] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const MAX_DEPTH  = 12;
-  const MAX_REPEAT = 3;              // 同文面 3 連続で打ち切り
+  const MAX_DEPTH = 12;
+  const MAX_REPEAT = 3;
 
-  /* 質問スキップ&リトライ用の共通 fetch */
   const fetchNext = async (newPayload: Payload, sessionId: string): Promise<DiagnoseResponse> =>
     fetch('/api/diagnose', {
       method: 'POST',
@@ -64,27 +60,24 @@ export default function Flow() {
         payload: newPayload,
         historyMsgs: newPayload.history.flatMap(h => [
           { role: 'assistant', content: h.question },
-          { role: 'user',       content: h.answer   },
+          { role: 'user', content: h.answer },
         ]),
       }),
     }).then(r => r.json());
 
-  /* 回答ハンドラ */
   const answer = async (ans: 'yes' | 'no' | 'unknown') => {
     if (!('question' in data)) return;
     setLoading(true);
 
-    /* 履歴更新 */
     const newHistory: QA[] = [...payload.history, { question: data.question, answer: ans }];
     const newPayload: Payload = { ...payload, history: newHistory };
 
     try {
       const res = await fetchNext(newPayload, data.sessionId);
 
-      /* ---------- 終了条件 ---------- */
       const terminate =
-        !res.follow_up_needed ||            // GPT が完了宣言
-        asked.size >= MAX_DEPTH;            // 深さ上限
+        !res.follow_up_needed ||
+        asked.size >= MAX_DEPTH;
 
       if (terminate) {
         const fallback: UnknownResponse = {
@@ -99,11 +92,9 @@ export default function Flow() {
         return;
       }
 
-      /* ---------- 重複質問チェック ---------- */
       if (asked.has(res.question ?? '')) {
         setRepeatCnt(c => c + 1);
 
-        // 3 連続同じ質問⇒あきらめ
         if (repeatCnt + 1 >= MAX_REPEAT) {
           const fallback: UnknownResponse = {
             follow_up_needed: false,
@@ -115,12 +106,10 @@ export default function Flow() {
           return;
         }
 
-        // 同じ質問をスキップして再リクエスト (unknown 自動送信)
         await answer('unknown');
         return;
       }
 
-      /* ---------- 正常に次の質問へ ---------- */
       setRepeatCnt(0);
       setData(res);
       setPayload(newPayload);
@@ -133,45 +122,47 @@ export default function Flow() {
     }
   };
 
-  /* 結果待ち表示 */
   if (!('question' in data)) {
     return (
-      <div className="p-6 text-center text-gray-600">
-        診断レポートを生成中…
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-lg font-medium text-gray-600">
+          診断レポートを生成中…
+        </div>
       </div>
     );
   }
 
-  /* ---------- 質問表示 ---------- */
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-[22rem] space-y-6 bg-white p-6 rounded-xl shadow">
-        <p className="text-lg font-semibold">{data.question}</p>
+      <div className="w-[22rem] space-y-6 bg-white p-8 rounded-xl shadow-lg">
+        <p className="text-lg font-medium text-gray-800">{data.question}</p>
 
-        <div className="flex flex-col gap-3">
-          <button
+        <div className="space-y-3">
+          <Button
             onClick={() => answer('yes')}
             disabled={loading}
-            className="py-2 rounded text-white bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400"
+            className="w-full bg-blue-600 hover:bg-blue-700"
           >
             はい
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => answer('no')}
             disabled={loading}
-            className="py-2 rounded bg-gray-300 hover:bg-gray-400 disabled:bg-gray-200"
+            variant="outline"
+            className="w-full"
           >
             いいえ
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={() => answer('unknown')}
             disabled={loading}
-            className="py-2 rounded bg-yellow-300 hover:bg-yellow-400 disabled:bg-gray-200"
+            variant="secondary"
+            className="w-full"
           >
             わからない
-          </button>
+          </Button>
         </div>
       </div>
     </div>
